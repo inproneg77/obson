@@ -3,7 +3,7 @@ backend:
   name: git-gateway
   repo: inproneg77/obson
   branch: main
-  identity_url: https://auth.decapbridge.com/sites/TU-SITE-ID   # <-- lo obtienes al registrar tu sitio en decapbridge.com
+  identity_url: https://auth.decapbridge.com/sites/6d32a6f0-3fff-4b7e-b4f6-4a40dfb844e0
   gateway_url: https://gateway.decapbridge.com
 
   commit_messages:
