@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADEMEBA — Líderes</title>
+<meta name="description" content="Top 10 de puntos, triples y faltas por categoría y temporada.">
+
+<!-- Favicon / ícono al guardar en el celular -->
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+
+<!-- Vista previa al compartir (WhatsApp, Facebook, etc.) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="ADEMEBA — Líderes">
+<meta property="og:description" content="Top 10 de puntos, triples y faltas por categoría y temporada.">
+<meta property="og:image" content="https://inproneg77.github.io/obson/img/logo-ademeba.png">
+<meta property="og:url" content="https://inproneg77.github.io/obson/lideres/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ADEMEBA — Líderes">
+<meta name="twitter:description" content="Top 10 de puntos, triples y faltas por categoría y temporada.">
+<meta name="twitter:image" content="https://inproneg77.github.io/obson/img/logo-ademeba.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a href="../index.html" class="brand">
+        <img src="../img/logo-ademeba.png" alt="Logo ADEMEBA" class="brand__mark">
+        <div>
+          <div class="brand__name">ADEMEBA</div>
+          <div class="brand__sub">Liga Municipal de Basquetbol</div>
+        </div>
+      </a>
+      <nav class="site-nav">
+        <a href="../index.html">Calendario</a>
+        <a href="../standing/index.html">Standing</a>
+        <a href="../equipos/index.html">Equipos</a>
+        <a href="../rankings/index.html">Rankings</a>
+        <a href="../comparar/index.html">Comparar</a>
+        <a href="../playoffs/index.html">Playoffs</a>
+        <a href="../lideres/index.html" class="active">Líderes</a>
+        <a href="../noticias/index.html">Noticias</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="hero">
+    <div class="hero__inner">
+      <div class="hero__eyebrow">Temporada 2026</div>
+      <h1 class="hero__title">Líderes de Estadísticas</h1>
+      <p class="hero__sub">Top 10 de puntos, triples y faltas por categoría y temporada.</p>
+    </div>
+  </div>
+
+
+  <div class="controles">
+    <div class="tabs" id="tabs"></div>
+    <div id="temporada-selector"></div>
+  </div>
+
+  <main class="page">
+    <div id="contenido"></div>
+  </main>
+
+  <div class="patrocinadores" id="patrocinadores"></div>
+
+  <footer class="site-footer">
+    © 2026 Liga Municipal de Basquetbol ADEMEBA
+  </footer>
+
+  <script>
+    window.RUTA_IMG = '../';
+    const _fetch = window.fetch;
+    window.fetch = (url, opts) => _fetch(url.startsWith('data/') ? '../' + url : url, opts);
+  </script>
+  <script src="../js/datos.js"></script>
+  <script src="../js/lideres.js"></script>
+</body>
+</html>

@@ -1,0 +1,1513 @@
+# Use DecapBridge classic auth (required)
+backend:
+  name: git-gateway
+  repo: inproneg77/obson
+  branch: main
+  identity_url: https://auth.decapbridge.com/sites/TU-SITE-ID   # <-- lo obtienes al registrar tu sitio en decapbridge.com
+  gateway_url: https://gateway.decapbridge.com
+
+  commit_messages:
+    create: Create {{collection}} "{{slug}}" - {{author-name}} <{{author-login}}> via DecapBridge
+    update: Update {{collection}} "{{slug}}" - {{author-name}} <{{author-login}}> via DecapBridge
+    delete: Delete {{collection}} "{{slug}}" - {{author-name}} <{{author-login}}> via DecapBridge
+    uploadMedia: Upload "{{path}}" - {{author-name}} <{{author-login}}> via DecapBridge
+    deleteMedia: Delete "{{path}}" - {{author-name}} <{{author-login}}> via DecapBridge
+    openAuthoring: Message {{message}} - {{author-name}} <{{author-login}}> via DecapBridge
+
+logo_url: https://decapbridge.com/decapcms-with-bridge.svg
+
+media_folder: "img/equipos"
+public_folder: "img/equipos"
+
+locale: "es"
+
+collections:
+  # ===== TEMPORADAS (crea aquí una temporada nueva antes de poder elegirla en Juegos/Playoffs) =====
+  - name: "temporadas"
+    label: "📅 Temporadas"
+    files:
+      - name: "temporadas"
+        label: "Temporadas"
+        file: "data/temporadas.json"
+        fields:
+          - name: "temporadas"
+            label: "Temporadas"
+            widget: "list"
+            summary: "{{fields.nombre}}"
+            fields:
+              - { name: "id", label: "ID único (ej. 2026-2)", widget: "string" }
+              - { name: "nombre", label: "Nombre a mostrar (ej. Temporada 2026-2)", widget: "string" }
+              - name: "activa"
+                label: "¿Es la temporada activa? (la que se ve por default en el sitio)"
+                widget: "select"
+                hint: "Solo debería haber UNA temporada marcada como activa a la vez."
+                options:
+                  - { label: "Sí, es la activa", value: "true" }
+                  - { label: "No", value: "false" }
+                default: "false"
+
+  # ===== EQUIPOS (un solo registro por equipo, puede jugar varias categorías) =====
+  - name: "equipos"
+    label: "🏀 Equipos"
+    files:
+      - name: "equipos"
+        label: "Equipos"
+        file: "data/equipos.json"
+        fields:
+          - name: "equipos"
+            label: "Equipos"
+            widget: "list"
+            summary: "{{fields.nombre}} — {{fields.categorias}}"
+            fields:
+              - { name: "id", label: "ID único (ej. CFEV40)", widget: "string" }
+              - { name: "nombre", label: "Nombre del equipo", widget: "string" }
+              - { name: "logo", label: "Logo del equipo", widget: "image", default: "img/equipos/placeholder.svg" }
+              - name: "categorias"
+                label: "Categorías en las que participa"
+                widget: "select"
+                multiple: true
+                min: 1
+                hint: "Puede participar en más de una categoría al mismo tiempo — selecciona todas las que apliquen."
+                options:
+                  - { label: "Primera Fuerza", value: "1f" }
+                  - { label: "Segunda Fuerza", value: "2f" }
+                  - { label: "Tercera Fuerza", value: "3f" }
+                  - { label: "Beginners", value: "beg" }
+                  - { label: "Dominguera", value: "dom" }
+                  - { label: "Botanera", value: "bot" }
+
+  # ===== JUGADORES (un solo registro por persona, con una fila por cada categoría/equipo/temporada) =====
+  - name: "jugadores"
+    label: "👤 Jugadores"
+    files:
+      - name: "jugadores"
+        label: "Jugadores"
+        file: "data/roster.json"
+        fields:
+          - name: "jugadores"
+            label: "Jugadores"
+            widget: "list"
+            summary: "{{fields.nombre}}"
+            fields:
+              - { name: "id", label: "ID único (ej. jugador-01)", widget: "string" }
+              - { name: "nombre", label: "Nombre completo", widget: "string" }
+              - { name: "numero", label: "Número de dorsal (opcional)", widget: "string", required: false }
+              - name: "membresias"
+                label: "Categorías, equipos y temporadas en las que ha jugado"
+                widget: "list"
+                summary: "{{fields.categoria_id}} — {{fields.equipo_id}} ({{fields.temporada}})"
+                hint: "Agrega una fila por cada combinación de categoría + equipo + temporada. Si cambia de equipo o juega 2 categorías, agrega una fila nueva — no crees a la persona otra vez."
+                fields:
+                  - name: "categoria_id"
+                    label: "Categoría"
+                    widget: "select"
+                    options:
+                      - { label: "Primera Fuerza", value: "1f" }
+                      - { label: "Segunda Fuerza", value: "2f" }
+                      - { label: "Tercera Fuerza", value: "3f" }
+                      - { label: "Beginners", value: "beg" }
+                      - { label: "Dominguera", value: "dom" }
+                      - { label: "Botanera", value: "bot" }
+                  - name: "equipo_id"
+                    label: "Equipo"
+                    widget: "relation"
+                    collection: "equipos"
+                    file: "equipos"
+                    search_fields: ["equipos.*.nombre"]
+                    display_fields: ["equipos.*.nombre"]
+                    value_field: "equipos.*.id"
+                    hint: "El buscador muestra TODOS los equipos de la liga — escribe el nombre para encontrarlo rápido."
+                  - name: "temporada"
+                    label: "Temporada"
+                    widget: "relation"
+                    collection: "temporadas"
+                    file: "temporadas"
+                    search_fields: ["temporadas.*.nombre"]
+                    display_fields: ["temporadas.*.nombre"]
+                    value_field: "temporadas.*.id"
+  - name: "juegos_1f"
+    label: "🏀 Primera Fuerza · Rol de Juegos"
+    files:
+      - name: "juegos_1f"
+        label: "Juegos Primera Fuerza"
+        file: "data/juegos_1f.json"
+        fields:
+          - name: "juegos"
+            label: "Juegos"
+            widget: "list"
+            summary: "{{fields.fecha}} — {{fields.local}} vs {{fields.visita}}"
+            fields:
+              - { name: "id", label: "ID único (ej. j-016)", widget: "string" }
+              - name: "temporada"
+                label: "Temporada"
+                widget: "relation"
+                collection: "temporadas"
+                file: "temporadas"
+                search_fields: ["temporadas.*.nombre"]
+                display_fields: ["temporadas.*.nombre"]
+                value_field: "temporadas.*.id"
+                hint: "Si la temporada no aparece, créala primero en '📅 Temporadas'."
+              - { name: "fecha", label: "Fecha del juego", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+              - { name: "hora", label: "Hora (24h, ej. 17:00)", widget: "string" }
+              - name: "sede_id"
+                label: "Sede"
+                widget: "select"
+                options:
+                  - { label: "Gimnasio Municipal", value: "gim_municipal" }
+                  - { label: "Cancha del CUM", value: "cancha_cum" }
+                  - { label: "Gimnasio 1ro de Mayo", value: "gim_1ro_mayo" }
+              - name: "local"
+                label: "Equipo local"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+                hint: "El buscador muestra TODOS los equipos de la liga (de cualquier categoría) — escribe el nombre para encontrarlo rápido."
+              - name: "visita"
+                label: "Equipo visitante"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+                hint: "El buscador muestra TODOS los equipos de la liga (de cualquier categoría) — escribe el nombre para encontrarlo rápido."
+              - name: "fase"
+                label: "Fase"
+                widget: "select"
+                hint: "Playoffs/Final/Amistoso NO se cuentan en la tabla de posiciones."
+                options:
+                  - { label: "Temporada regular", value: "regular" }
+                  - { label: "Playoffs", value: "playoffs" }
+                  - { label: "Final", value: "final" }
+                  - { label: "Amistoso", value: "amistoso" }
+                default: "regular"
+              - name: "vuelta"
+                label: "Vuelta (si la categoría juega 2 o 3 vueltas)"
+                widget: "number"
+                value_type: "int"
+                default: 1
+                hint: "1 = primera vuelta, 2 = segunda vuelta, etc. Solo aplica a temporada regular."
+              - name: "destacado"
+                label: "¿Marcar como Juego Destacado (banner de Próximo Juego)?"
+                widget: "select"
+                hint: "Si lo activas, este juego aparece en el banner de arriba del Calendario mientras siga 'Programado'. Si no marcas ninguno, el sitio muestra automáticamente el juego programado más próximo en fecha."
+                options:
+                  - { label: "No", value: "false" }
+                  - { label: "Sí, destacarlo", value: "true" }
+                default: "false"
+              - name: "estatus"
+                label: "Estatus"
+                widget: "select"
+                options:
+                  - { label: "Programado (sin resultado)", value: "programado" }
+                  - { label: "Jugado (con resultado)", value: "jugado" }
+                default: "programado"
+              - name: "forfeit"
+                label: "¿Hubo forfeit (no presentarse)?"
+                widget: "select"
+                hint: "Si hay forfeit, pon el marcador 20-0 a favor de quien sí se presentó. El equipo forfeit recibe 0 puntos en vez de 1."
+                options:
+                  - { label: "No hubo forfeit", value: "ninguno" }
+                  - { label: "Forfeit del equipo LOCAL (gana visita)", value: "local" }
+                  - { label: "Forfeit del equipo VISITANTE (gana local)", value: "visita" }
+                default: "ninguno"
+              - { name: "marcador_local", label: "Marcador local", widget: "number", required: false, value_type: "int" }
+              - { name: "marcador_visita", label: "Marcador visita", widget: "number", required: false, value_type: "int" }
+              - name: "mvp_jugador"
+                label: "Jugador(a) Destacado(a) del partido"
+                widget: "relation"
+                collection: "jugadores"
+                file: "jugadores"
+                search_fields: ["jugadores.*.nombre"]
+                display_fields: ["jugadores.*.nombre"]
+                value_field: "jugadores.*.id"
+                options_length: 100
+                required: false
+                hint: "Búscalo por nombre. El buscador muestra a TODOS los jugadores de la liga (Decap CMS no permite filtrar solo a los del equipo ganador de este partido) — revisa que elijas al correcto."
+              - name: "mvp_nombre"
+                label: "Detalle del MVP (opcional, ej. \"17 puntos, 5 rebotes\")"
+                widget: "string"
+                required: false
+                hint: "Ya no se usa para el nombre (usa el campo de arriba). Aquí solo van detalles extra si quieres."
+              - name: "estadisticas_local"
+                label: "Estadísticas — Equipo LOCAL"
+                widget: "list"
+                required: false
+                summary: "{{fields.jugador}}: {{fields.puntos}} pts"
+                fields:
+                  - name: "jugador"
+                    label: "Jugador"
+                    widget: "relation"
+                    collection: "jugadores"
+                    file: "jugadores"
+                    search_fields: ["jugadores.*.nombre"]
+                    display_fields: ["jugadores.*.nombre"]
+                    value_field: "jugadores.*.id"
+                    options_length: 100
+                  - name: "asistio"
+                    label: "¿Asistió al juego?"
+                    widget: "select"
+                    options:
+                      - { label: "Sí asistió", value: "true" }
+                      - { label: "No asistió", value: "false" }
+                    default: "true"
+                  - { name: "puntos", label: "Puntos anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "triples", label: "Triples anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "faltas", label: "Faltas cometidas", widget: "number", value_type: "int", default: 0 }
+              - name: "estadisticas_visita"
+                label: "Estadísticas — Equipo VISITANTE"
+                widget: "list"
+                required: false
+                summary: "{{fields.jugador}}: {{fields.puntos}} pts"
+                fields:
+                  - name: "jugador"
+                    label: "Jugador"
+                    widget: "relation"
+                    collection: "jugadores"
+                    file: "jugadores"
+                    search_fields: ["jugadores.*.nombre"]
+                    display_fields: ["jugadores.*.nombre"]
+                    value_field: "jugadores.*.id"
+                    options_length: 100
+                  - name: "asistio"
+                    label: "¿Asistió al juego?"
+                    widget: "select"
+                    options:
+                      - { label: "Sí asistió", value: "true" }
+                      - { label: "No asistió", value: "false" }
+                    default: "true"
+                  - { name: "puntos", label: "Puntos anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "triples", label: "Triples anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "faltas", label: "Faltas cometidas", widget: "number", value_type: "int", default: 0 }
+              - { name: "observaciones", label: "Observaciones (puntos del MVP, incidencias, forfeit, etc.)", widget: "text", required: false }
+  - name: "juegos_2f"
+    label: "🏀 Segunda Fuerza · Rol de Juegos"
+    files:
+      - name: "juegos_2f"
+        label: "Juegos Segunda Fuerza"
+        file: "data/juegos_2f.json"
+        fields:
+          - name: "juegos"
+            label: "Juegos"
+            widget: "list"
+            summary: "{{fields.fecha}} — {{fields.local}} vs {{fields.visita}}"
+            fields:
+              - { name: "id", label: "ID único (ej. j-016)", widget: "string" }
+              - name: "temporada"
+                label: "Temporada"
+                widget: "relation"
+                collection: "temporadas"
+                file: "temporadas"
+                search_fields: ["temporadas.*.nombre"]
+                display_fields: ["temporadas.*.nombre"]
+                value_field: "temporadas.*.id"
+                hint: "Si la temporada no aparece, créala primero en '📅 Temporadas'."
+              - { name: "fecha", label: "Fecha del juego", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+              - { name: "hora", label: "Hora (24h, ej. 17:00)", widget: "string" }
+              - name: "sede_id"
+                label: "Sede"
+                widget: "select"
+                options:
+                  - { label: "Gimnasio Municipal", value: "gim_municipal" }
+                  - { label: "Cancha del CUM", value: "cancha_cum" }
+                  - { label: "Gimnasio 1ro de Mayo", value: "gim_1ro_mayo" }
+              - name: "local"
+                label: "Equipo local"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+                hint: "El buscador muestra TODOS los equipos de la liga (de cualquier categoría) — escribe el nombre para encontrarlo rápido."
+              - name: "visita"
+                label: "Equipo visitante"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+                hint: "El buscador muestra TODOS los equipos de la liga (de cualquier categoría) — escribe el nombre para encontrarlo rápido."
+              - name: "fase"
+                label: "Fase"
+                widget: "select"
+                hint: "Playoffs/Final/Amistoso NO se cuentan en la tabla de posiciones."
+                options:
+                  - { label: "Temporada regular", value: "regular" }
+                  - { label: "Playoffs", value: "playoffs" }
+                  - { label: "Final", value: "final" }
+                  - { label: "Amistoso", value: "amistoso" }
+                default: "regular"
+              - name: "vuelta"
+                label: "Vuelta (si la categoría juega 2 o 3 vueltas)"
+                widget: "number"
+                value_type: "int"
+                default: 1
+                hint: "1 = primera vuelta, 2 = segunda vuelta, etc. Solo aplica a temporada regular."
+              - name: "destacado"
+                label: "¿Marcar como Juego Destacado (banner de Próximo Juego)?"
+                widget: "select"
+                hint: "Si lo activas, este juego aparece en el banner de arriba del Calendario mientras siga 'Programado'. Si no marcas ninguno, el sitio muestra automáticamente el juego programado más próximo en fecha."
+                options:
+                  - { label: "No", value: "false" }
+                  - { label: "Sí, destacarlo", value: "true" }
+                default: "false"
+              - name: "estatus"
+                label: "Estatus"
+                widget: "select"
+                options:
+                  - { label: "Programado (sin resultado)", value: "programado" }
+                  - { label: "Jugado (con resultado)", value: "jugado" }
+                default: "programado"
+              - name: "forfeit"
+                label: "¿Hubo forfeit (no presentarse)?"
+                widget: "select"
+                hint: "Si hay forfeit, pon el marcador 20-0 a favor de quien sí se presentó. El equipo forfeit recibe 0 puntos en vez de 1."
+                options:
+                  - { label: "No hubo forfeit", value: "ninguno" }
+                  - { label: "Forfeit del equipo LOCAL (gana visita)", value: "local" }
+                  - { label: "Forfeit del equipo VISITANTE (gana local)", value: "visita" }
+                default: "ninguno"
+              - { name: "marcador_local", label: "Marcador local", widget: "number", required: false, value_type: "int" }
+              - { name: "marcador_visita", label: "Marcador visita", widget: "number", required: false, value_type: "int" }
+              - name: "mvp_jugador"
+                label: "Jugador(a) Destacado(a) del partido"
+                widget: "relation"
+                collection: "jugadores"
+                file: "jugadores"
+                search_fields: ["jugadores.*.nombre"]
+                display_fields: ["jugadores.*.nombre"]
+                value_field: "jugadores.*.id"
+                options_length: 100
+                required: false
+                hint: "Búscalo por nombre. El buscador muestra a TODOS los jugadores de la liga (Decap CMS no permite filtrar solo a los del equipo ganador de este partido) — revisa que elijas al correcto."
+              - name: "mvp_nombre"
+                label: "Detalle del MVP (opcional, ej. \"17 puntos, 5 rebotes\")"
+                widget: "string"
+                required: false
+                hint: "Ya no se usa para el nombre (usa el campo de arriba). Aquí solo van detalles extra si quieres."
+              - name: "estadisticas_local"
+                label: "Estadísticas — Equipo LOCAL"
+                widget: "list"
+                required: false
+                summary: "{{fields.jugador}}: {{fields.puntos}} pts"
+                fields:
+                  - name: "jugador"
+                    label: "Jugador"
+                    widget: "relation"
+                    collection: "jugadores"
+                    file: "jugadores"
+                    search_fields: ["jugadores.*.nombre"]
+                    display_fields: ["jugadores.*.nombre"]
+                    value_field: "jugadores.*.id"
+                    options_length: 100
+                  - name: "asistio"
+                    label: "¿Asistió al juego?"
+                    widget: "select"
+                    options:
+                      - { label: "Sí asistió", value: "true" }
+                      - { label: "No asistió", value: "false" }
+                    default: "true"
+                  - { name: "puntos", label: "Puntos anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "triples", label: "Triples anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "faltas", label: "Faltas cometidas", widget: "number", value_type: "int", default: 0 }
+              - name: "estadisticas_visita"
+                label: "Estadísticas — Equipo VISITANTE"
+                widget: "list"
+                required: false
+                summary: "{{fields.jugador}}: {{fields.puntos}} pts"
+                fields:
+                  - name: "jugador"
+                    label: "Jugador"
+                    widget: "relation"
+                    collection: "jugadores"
+                    file: "jugadores"
+                    search_fields: ["jugadores.*.nombre"]
+                    display_fields: ["jugadores.*.nombre"]
+                    value_field: "jugadores.*.id"
+                    options_length: 100
+                  - name: "asistio"
+                    label: "¿Asistió al juego?"
+                    widget: "select"
+                    options:
+                      - { label: "Sí asistió", value: "true" }
+                      - { label: "No asistió", value: "false" }
+                    default: "true"
+                  - { name: "puntos", label: "Puntos anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "triples", label: "Triples anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "faltas", label: "Faltas cometidas", widget: "number", value_type: "int", default: 0 }
+              - { name: "observaciones", label: "Observaciones (puntos del MVP, incidencias, forfeit, etc.)", widget: "text", required: false }
+  - name: "juegos_3f"
+    label: "🏀 Tercera Fuerza · Rol de Juegos"
+    files:
+      - name: "juegos_3f"
+        label: "Juegos Tercera Fuerza"
+        file: "data/juegos_3f.json"
+        fields:
+          - name: "juegos"
+            label: "Juegos"
+            widget: "list"
+            summary: "{{fields.fecha}} — {{fields.local}} vs {{fields.visita}}"
+            fields:
+              - { name: "id", label: "ID único (ej. j-016)", widget: "string" }
+              - name: "temporada"
+                label: "Temporada"
+                widget: "relation"
+                collection: "temporadas"
+                file: "temporadas"
+                search_fields: ["temporadas.*.nombre"]
+                display_fields: ["temporadas.*.nombre"]
+                value_field: "temporadas.*.id"
+                hint: "Si la temporada no aparece, créala primero en '📅 Temporadas'."
+              - { name: "fecha", label: "Fecha del juego", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+              - { name: "hora", label: "Hora (24h, ej. 17:00)", widget: "string" }
+              - name: "sede_id"
+                label: "Sede"
+                widget: "select"
+                options:
+                  - { label: "Gimnasio Municipal", value: "gim_municipal" }
+                  - { label: "Cancha del CUM", value: "cancha_cum" }
+                  - { label: "Gimnasio 1ro de Mayo", value: "gim_1ro_mayo" }
+              - name: "local"
+                label: "Equipo local"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+                hint: "El buscador muestra TODOS los equipos de la liga (de cualquier categoría) — escribe el nombre para encontrarlo rápido."
+              - name: "visita"
+                label: "Equipo visitante"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+                hint: "El buscador muestra TODOS los equipos de la liga (de cualquier categoría) — escribe el nombre para encontrarlo rápido."
+              - name: "fase"
+                label: "Fase"
+                widget: "select"
+                hint: "Playoffs/Final/Amistoso NO se cuentan en la tabla de posiciones."
+                options:
+                  - { label: "Temporada regular", value: "regular" }
+                  - { label: "Playoffs", value: "playoffs" }
+                  - { label: "Final", value: "final" }
+                  - { label: "Amistoso", value: "amistoso" }
+                default: "regular"
+              - name: "vuelta"
+                label: "Vuelta (si la categoría juega 2 o 3 vueltas)"
+                widget: "number"
+                value_type: "int"
+                default: 1
+                hint: "1 = primera vuelta, 2 = segunda vuelta, etc. Solo aplica a temporada regular."
+              - name: "destacado"
+                label: "¿Marcar como Juego Destacado (banner de Próximo Juego)?"
+                widget: "select"
+                hint: "Si lo activas, este juego aparece en el banner de arriba del Calendario mientras siga 'Programado'. Si no marcas ninguno, el sitio muestra automáticamente el juego programado más próximo en fecha."
+                options:
+                  - { label: "No", value: "false" }
+                  - { label: "Sí, destacarlo", value: "true" }
+                default: "false"
+              - name: "estatus"
+                label: "Estatus"
+                widget: "select"
+                options:
+                  - { label: "Programado (sin resultado)", value: "programado" }
+                  - { label: "Jugado (con resultado)", value: "jugado" }
+                default: "programado"
+              - name: "forfeit"
+                label: "¿Hubo forfeit (no presentarse)?"
+                widget: "select"
+                hint: "Si hay forfeit, pon el marcador 20-0 a favor de quien sí se presentó. El equipo forfeit recibe 0 puntos en vez de 1."
+                options:
+                  - { label: "No hubo forfeit", value: "ninguno" }
+                  - { label: "Forfeit del equipo LOCAL (gana visita)", value: "local" }
+                  - { label: "Forfeit del equipo VISITANTE (gana local)", value: "visita" }
+                default: "ninguno"
+              - { name: "marcador_local", label: "Marcador local", widget: "number", required: false, value_type: "int" }
+              - { name: "marcador_visita", label: "Marcador visita", widget: "number", required: false, value_type: "int" }
+              - name: "mvp_jugador"
+                label: "Jugador(a) Destacado(a) del partido"
+                widget: "relation"
+                collection: "jugadores"
+                file: "jugadores"
+                search_fields: ["jugadores.*.nombre"]
+                display_fields: ["jugadores.*.nombre"]
+                value_field: "jugadores.*.id"
+                options_length: 100
+                required: false
+                hint: "Búscalo por nombre. El buscador muestra a TODOS los jugadores de la liga (Decap CMS no permite filtrar solo a los del equipo ganador de este partido) — revisa que elijas al correcto."
+              - name: "mvp_nombre"
+                label: "Detalle del MVP (opcional, ej. \"17 puntos, 5 rebotes\")"
+                widget: "string"
+                required: false
+                hint: "Ya no se usa para el nombre (usa el campo de arriba). Aquí solo van detalles extra si quieres."
+              - name: "estadisticas_local"
+                label: "Estadísticas — Equipo LOCAL"
+                widget: "list"
+                required: false
+                summary: "{{fields.jugador}}: {{fields.puntos}} pts"
+                fields:
+                  - name: "jugador"
+                    label: "Jugador"
+                    widget: "relation"
+                    collection: "jugadores"
+                    file: "jugadores"
+                    search_fields: ["jugadores.*.nombre"]
+                    display_fields: ["jugadores.*.nombre"]
+                    value_field: "jugadores.*.id"
+                    options_length: 100
+                  - name: "asistio"
+                    label: "¿Asistió al juego?"
+                    widget: "select"
+                    options:
+                      - { label: "Sí asistió", value: "true" }
+                      - { label: "No asistió", value: "false" }
+                    default: "true"
+                  - { name: "puntos", label: "Puntos anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "triples", label: "Triples anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "faltas", label: "Faltas cometidas", widget: "number", value_type: "int", default: 0 }
+              - name: "estadisticas_visita"
+                label: "Estadísticas — Equipo VISITANTE"
+                widget: "list"
+                required: false
+                summary: "{{fields.jugador}}: {{fields.puntos}} pts"
+                fields:
+                  - name: "jugador"
+                    label: "Jugador"
+                    widget: "relation"
+                    collection: "jugadores"
+                    file: "jugadores"
+                    search_fields: ["jugadores.*.nombre"]
+                    display_fields: ["jugadores.*.nombre"]
+                    value_field: "jugadores.*.id"
+                    options_length: 100
+                  - name: "asistio"
+                    label: "¿Asistió al juego?"
+                    widget: "select"
+                    options:
+                      - { label: "Sí asistió", value: "true" }
+                      - { label: "No asistió", value: "false" }
+                    default: "true"
+                  - { name: "puntos", label: "Puntos anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "triples", label: "Triples anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "faltas", label: "Faltas cometidas", widget: "number", value_type: "int", default: 0 }
+              - { name: "observaciones", label: "Observaciones (puntos del MVP, incidencias, forfeit, etc.)", widget: "text", required: false }
+  - name: "juegos_beg"
+    label: "🏀 Beginners · Rol de Juegos"
+    files:
+      - name: "juegos_beg"
+        label: "Juegos Beginners"
+        file: "data/juegos_beg.json"
+        fields:
+          - name: "juegos"
+            label: "Juegos"
+            widget: "list"
+            summary: "{{fields.fecha}} — {{fields.local}} vs {{fields.visita}}"
+            fields:
+              - { name: "id", label: "ID único (ej. j-016)", widget: "string" }
+              - name: "temporada"
+                label: "Temporada"
+                widget: "relation"
+                collection: "temporadas"
+                file: "temporadas"
+                search_fields: ["temporadas.*.nombre"]
+                display_fields: ["temporadas.*.nombre"]
+                value_field: "temporadas.*.id"
+                hint: "Si la temporada no aparece, créala primero en '📅 Temporadas'."
+              - { name: "fecha", label: "Fecha del juego", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+              - { name: "hora", label: "Hora (24h, ej. 17:00)", widget: "string" }
+              - name: "sede_id"
+                label: "Sede"
+                widget: "select"
+                options:
+                  - { label: "Gimnasio Municipal", value: "gim_municipal" }
+                  - { label: "Cancha del CUM", value: "cancha_cum" }
+                  - { label: "Gimnasio 1ro de Mayo", value: "gim_1ro_mayo" }
+              - name: "local"
+                label: "Equipo local"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+                hint: "El buscador muestra TODOS los equipos de la liga (de cualquier categoría) — escribe el nombre para encontrarlo rápido."
+              - name: "visita"
+                label: "Equipo visitante"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+                hint: "El buscador muestra TODOS los equipos de la liga (de cualquier categoría) — escribe el nombre para encontrarlo rápido."
+              - name: "fase"
+                label: "Fase"
+                widget: "select"
+                hint: "Playoffs/Final/Amistoso NO se cuentan en la tabla de posiciones."
+                options:
+                  - { label: "Temporada regular", value: "regular" }
+                  - { label: "Playoffs", value: "playoffs" }
+                  - { label: "Final", value: "final" }
+                  - { label: "Amistoso", value: "amistoso" }
+                default: "regular"
+              - name: "vuelta"
+                label: "Vuelta (si la categoría juega 2 o 3 vueltas)"
+                widget: "number"
+                value_type: "int"
+                default: 1
+                hint: "1 = primera vuelta, 2 = segunda vuelta, etc. Solo aplica a temporada regular."
+              - name: "destacado"
+                label: "¿Marcar como Juego Destacado (banner de Próximo Juego)?"
+                widget: "select"
+                hint: "Si lo activas, este juego aparece en el banner de arriba del Calendario mientras siga 'Programado'. Si no marcas ninguno, el sitio muestra automáticamente el juego programado más próximo en fecha."
+                options:
+                  - { label: "No", value: "false" }
+                  - { label: "Sí, destacarlo", value: "true" }
+                default: "false"
+              - name: "estatus"
+                label: "Estatus"
+                widget: "select"
+                options:
+                  - { label: "Programado (sin resultado)", value: "programado" }
+                  - { label: "Jugado (con resultado)", value: "jugado" }
+                default: "programado"
+              - name: "forfeit"
+                label: "¿Hubo forfeit (no presentarse)?"
+                widget: "select"
+                hint: "Si hay forfeit, pon el marcador 20-0 a favor de quien sí se presentó. El equipo forfeit recibe 0 puntos en vez de 1."
+                options:
+                  - { label: "No hubo forfeit", value: "ninguno" }
+                  - { label: "Forfeit del equipo LOCAL (gana visita)", value: "local" }
+                  - { label: "Forfeit del equipo VISITANTE (gana local)", value: "visita" }
+                default: "ninguno"
+              - { name: "marcador_local", label: "Marcador local", widget: "number", required: false, value_type: "int" }
+              - { name: "marcador_visita", label: "Marcador visita", widget: "number", required: false, value_type: "int" }
+              - name: "mvp_jugador"
+                label: "Jugador(a) Destacado(a) del partido"
+                widget: "relation"
+                collection: "jugadores"
+                file: "jugadores"
+                search_fields: ["jugadores.*.nombre"]
+                display_fields: ["jugadores.*.nombre"]
+                value_field: "jugadores.*.id"
+                options_length: 100
+                required: false
+                hint: "Búscalo por nombre. El buscador muestra a TODOS los jugadores de la liga (Decap CMS no permite filtrar solo a los del equipo ganador de este partido) — revisa que elijas al correcto."
+              - name: "mvp_nombre"
+                label: "Detalle del MVP (opcional, ej. \"17 puntos, 5 rebotes\")"
+                widget: "string"
+                required: false
+                hint: "Ya no se usa para el nombre (usa el campo de arriba). Aquí solo van detalles extra si quieres."
+              - name: "estadisticas_local"
+                label: "Estadísticas — Equipo LOCAL"
+                widget: "list"
+                required: false
+                summary: "{{fields.jugador}}: {{fields.puntos}} pts"
+                fields:
+                  - name: "jugador"
+                    label: "Jugador"
+                    widget: "relation"
+                    collection: "jugadores"
+                    file: "jugadores"
+                    search_fields: ["jugadores.*.nombre"]
+                    display_fields: ["jugadores.*.nombre"]
+                    value_field: "jugadores.*.id"
+                    options_length: 100
+                  - name: "asistio"
+                    label: "¿Asistió al juego?"
+                    widget: "select"
+                    options:
+                      - { label: "Sí asistió", value: "true" }
+                      - { label: "No asistió", value: "false" }
+                    default: "true"
+                  - { name: "puntos", label: "Puntos anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "triples", label: "Triples anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "faltas", label: "Faltas cometidas", widget: "number", value_type: "int", default: 0 }
+              - name: "estadisticas_visita"
+                label: "Estadísticas — Equipo VISITANTE"
+                widget: "list"
+                required: false
+                summary: "{{fields.jugador}}: {{fields.puntos}} pts"
+                fields:
+                  - name: "jugador"
+                    label: "Jugador"
+                    widget: "relation"
+                    collection: "jugadores"
+                    file: "jugadores"
+                    search_fields: ["jugadores.*.nombre"]
+                    display_fields: ["jugadores.*.nombre"]
+                    value_field: "jugadores.*.id"
+                    options_length: 100
+                  - name: "asistio"
+                    label: "¿Asistió al juego?"
+                    widget: "select"
+                    options:
+                      - { label: "Sí asistió", value: "true" }
+                      - { label: "No asistió", value: "false" }
+                    default: "true"
+                  - { name: "puntos", label: "Puntos anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "triples", label: "Triples anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "faltas", label: "Faltas cometidas", widget: "number", value_type: "int", default: 0 }
+              - { name: "observaciones", label: "Observaciones (puntos del MVP, incidencias, forfeit, etc.)", widget: "text", required: false }
+  - name: "juegos_dom"
+    label: "🏀 Dominguera · Rol de Juegos"
+    files:
+      - name: "juegos_dom"
+        label: "Juegos Dominguera"
+        file: "data/juegos_dom.json"
+        fields:
+          - name: "juegos"
+            label: "Juegos"
+            widget: "list"
+            summary: "{{fields.fecha}} — {{fields.local}} vs {{fields.visita}}"
+            fields:
+              - { name: "id", label: "ID único (ej. j-016)", widget: "string" }
+              - name: "temporada"
+                label: "Temporada"
+                widget: "relation"
+                collection: "temporadas"
+                file: "temporadas"
+                search_fields: ["temporadas.*.nombre"]
+                display_fields: ["temporadas.*.nombre"]
+                value_field: "temporadas.*.id"
+                hint: "Si la temporada no aparece, créala primero en '📅 Temporadas'."
+              - { name: "fecha", label: "Fecha del juego", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+              - { name: "hora", label: "Hora (24h, ej. 17:00)", widget: "string" }
+              - name: "sede_id"
+                label: "Sede"
+                widget: "select"
+                options:
+                  - { label: "Gimnasio Municipal", value: "gim_municipal" }
+                  - { label: "Cancha del CUM", value: "cancha_cum" }
+                  - { label: "Gimnasio 1ro de Mayo", value: "gim_1ro_mayo" }
+              - name: "local"
+                label: "Equipo local"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+                hint: "El buscador muestra TODOS los equipos de la liga (de cualquier categoría) — escribe el nombre para encontrarlo rápido."
+              - name: "visita"
+                label: "Equipo visitante"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+                hint: "El buscador muestra TODOS los equipos de la liga (de cualquier categoría) — escribe el nombre para encontrarlo rápido."
+              - name: "fase"
+                label: "Fase"
+                widget: "select"
+                hint: "Playoffs/Final/Amistoso NO se cuentan en la tabla de posiciones."
+                options:
+                  - { label: "Temporada regular", value: "regular" }
+                  - { label: "Playoffs", value: "playoffs" }
+                  - { label: "Final", value: "final" }
+                  - { label: "Amistoso", value: "amistoso" }
+                default: "regular"
+              - name: "vuelta"
+                label: "Vuelta (si la categoría juega 2 o 3 vueltas)"
+                widget: "number"
+                value_type: "int"
+                default: 1
+                hint: "1 = primera vuelta, 2 = segunda vuelta, etc. Solo aplica a temporada regular."
+              - name: "destacado"
+                label: "¿Marcar como Juego Destacado (banner de Próximo Juego)?"
+                widget: "select"
+                hint: "Si lo activas, este juego aparece en el banner de arriba del Calendario mientras siga 'Programado'. Si no marcas ninguno, el sitio muestra automáticamente el juego programado más próximo en fecha."
+                options:
+                  - { label: "No", value: "false" }
+                  - { label: "Sí, destacarlo", value: "true" }
+                default: "false"
+              - name: "estatus"
+                label: "Estatus"
+                widget: "select"
+                options:
+                  - { label: "Programado (sin resultado)", value: "programado" }
+                  - { label: "Jugado (con resultado)", value: "jugado" }
+                default: "programado"
+              - name: "forfeit"
+                label: "¿Hubo forfeit (no presentarse)?"
+                widget: "select"
+                hint: "Si hay forfeit, pon el marcador 20-0 a favor de quien sí se presentó. El equipo forfeit recibe 0 puntos en vez de 1."
+                options:
+                  - { label: "No hubo forfeit", value: "ninguno" }
+                  - { label: "Forfeit del equipo LOCAL (gana visita)", value: "local" }
+                  - { label: "Forfeit del equipo VISITANTE (gana local)", value: "visita" }
+                default: "ninguno"
+              - { name: "marcador_local", label: "Marcador local", widget: "number", required: false, value_type: "int" }
+              - { name: "marcador_visita", label: "Marcador visita", widget: "number", required: false, value_type: "int" }
+              - name: "mvp_jugador"
+                label: "Jugador(a) Destacado(a) del partido"
+                widget: "relation"
+                collection: "jugadores"
+                file: "jugadores"
+                search_fields: ["jugadores.*.nombre"]
+                display_fields: ["jugadores.*.nombre"]
+                value_field: "jugadores.*.id"
+                options_length: 100
+                required: false
+                hint: "Búscalo por nombre. El buscador muestra a TODOS los jugadores de la liga (Decap CMS no permite filtrar solo a los del equipo ganador de este partido) — revisa que elijas al correcto."
+              - name: "mvp_nombre"
+                label: "Detalle del MVP (opcional, ej. \"17 puntos, 5 rebotes\")"
+                widget: "string"
+                required: false
+                hint: "Ya no se usa para el nombre (usa el campo de arriba). Aquí solo van detalles extra si quieres."
+              - name: "estadisticas_local"
+                label: "Estadísticas — Equipo LOCAL"
+                widget: "list"
+                required: false
+                summary: "{{fields.jugador}}: {{fields.puntos}} pts"
+                fields:
+                  - name: "jugador"
+                    label: "Jugador"
+                    widget: "relation"
+                    collection: "jugadores"
+                    file: "jugadores"
+                    search_fields: ["jugadores.*.nombre"]
+                    display_fields: ["jugadores.*.nombre"]
+                    value_field: "jugadores.*.id"
+                    options_length: 100
+                  - name: "asistio"
+                    label: "¿Asistió al juego?"
+                    widget: "select"
+                    options:
+                      - { label: "Sí asistió", value: "true" }
+                      - { label: "No asistió", value: "false" }
+                    default: "true"
+                  - { name: "puntos", label: "Puntos anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "triples", label: "Triples anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "faltas", label: "Faltas cometidas", widget: "number", value_type: "int", default: 0 }
+              - name: "estadisticas_visita"
+                label: "Estadísticas — Equipo VISITANTE"
+                widget: "list"
+                required: false
+                summary: "{{fields.jugador}}: {{fields.puntos}} pts"
+                fields:
+                  - name: "jugador"
+                    label: "Jugador"
+                    widget: "relation"
+                    collection: "jugadores"
+                    file: "jugadores"
+                    search_fields: ["jugadores.*.nombre"]
+                    display_fields: ["jugadores.*.nombre"]
+                    value_field: "jugadores.*.id"
+                    options_length: 100
+                  - name: "asistio"
+                    label: "¿Asistió al juego?"
+                    widget: "select"
+                    options:
+                      - { label: "Sí asistió", value: "true" }
+                      - { label: "No asistió", value: "false" }
+                    default: "true"
+                  - { name: "puntos", label: "Puntos anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "triples", label: "Triples anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "faltas", label: "Faltas cometidas", widget: "number", value_type: "int", default: 0 }
+              - { name: "observaciones", label: "Observaciones (puntos del MVP, incidencias, forfeit, etc.)", widget: "text", required: false }
+  - name: "juegos_bot"
+    label: "🏀 Botanera · Rol de Juegos"
+    files:
+      - name: "juegos_bot"
+        label: "Juegos Botanera"
+        file: "data/juegos_bot.json"
+        fields:
+          - name: "juegos"
+            label: "Juegos"
+            widget: "list"
+            summary: "{{fields.fecha}} — {{fields.local}} vs {{fields.visita}}"
+            fields:
+              - { name: "id", label: "ID único (ej. j-016)", widget: "string" }
+              - name: "temporada"
+                label: "Temporada"
+                widget: "relation"
+                collection: "temporadas"
+                file: "temporadas"
+                search_fields: ["temporadas.*.nombre"]
+                display_fields: ["temporadas.*.nombre"]
+                value_field: "temporadas.*.id"
+                hint: "Si la temporada no aparece, créala primero en '📅 Temporadas'."
+              - { name: "fecha", label: "Fecha del juego", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+              - { name: "hora", label: "Hora (24h, ej. 17:00)", widget: "string" }
+              - name: "sede_id"
+                label: "Sede"
+                widget: "select"
+                options:
+                  - { label: "Gimnasio Municipal", value: "gim_municipal" }
+                  - { label: "Cancha del CUM", value: "cancha_cum" }
+                  - { label: "Gimnasio 1ro de Mayo", value: "gim_1ro_mayo" }
+              - name: "local"
+                label: "Equipo local"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+                hint: "El buscador muestra TODOS los equipos de la liga (de cualquier categoría) — escribe el nombre para encontrarlo rápido."
+              - name: "visita"
+                label: "Equipo visitante"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+                hint: "El buscador muestra TODOS los equipos de la liga (de cualquier categoría) — escribe el nombre para encontrarlo rápido."
+              - name: "fase"
+                label: "Fase"
+                widget: "select"
+                hint: "Playoffs/Final/Amistoso NO se cuentan en la tabla de posiciones."
+                options:
+                  - { label: "Temporada regular", value: "regular" }
+                  - { label: "Playoffs", value: "playoffs" }
+                  - { label: "Final", value: "final" }
+                  - { label: "Amistoso", value: "amistoso" }
+                default: "regular"
+              - name: "vuelta"
+                label: "Vuelta (si la categoría juega 2 o 3 vueltas)"
+                widget: "number"
+                value_type: "int"
+                default: 1
+                hint: "1 = primera vuelta, 2 = segunda vuelta, etc. Solo aplica a temporada regular."
+              - name: "destacado"
+                label: "¿Marcar como Juego Destacado (banner de Próximo Juego)?"
+                widget: "select"
+                hint: "Si lo activas, este juego aparece en el banner de arriba del Calendario mientras siga 'Programado'. Si no marcas ninguno, el sitio muestra automáticamente el juego programado más próximo en fecha."
+                options:
+                  - { label: "No", value: "false" }
+                  - { label: "Sí, destacarlo", value: "true" }
+                default: "false"
+              - name: "estatus"
+                label: "Estatus"
+                widget: "select"
+                options:
+                  - { label: "Programado (sin resultado)", value: "programado" }
+                  - { label: "Jugado (con resultado)", value: "jugado" }
+                default: "programado"
+              - name: "forfeit"
+                label: "¿Hubo forfeit (no presentarse)?"
+                widget: "select"
+                hint: "Si hay forfeit, pon el marcador 20-0 a favor de quien sí se presentó. El equipo forfeit recibe 0 puntos en vez de 1."
+                options:
+                  - { label: "No hubo forfeit", value: "ninguno" }
+                  - { label: "Forfeit del equipo LOCAL (gana visita)", value: "local" }
+                  - { label: "Forfeit del equipo VISITANTE (gana local)", value: "visita" }
+                default: "ninguno"
+              - { name: "marcador_local", label: "Marcador local", widget: "number", required: false, value_type: "int" }
+              - { name: "marcador_visita", label: "Marcador visita", widget: "number", required: false, value_type: "int" }
+              - name: "mvp_jugador"
+                label: "Jugador(a) Destacado(a) del partido"
+                widget: "relation"
+                collection: "jugadores"
+                file: "jugadores"
+                search_fields: ["jugadores.*.nombre"]
+                display_fields: ["jugadores.*.nombre"]
+                value_field: "jugadores.*.id"
+                options_length: 100
+                required: false
+                hint: "Búscalo por nombre. El buscador muestra a TODOS los jugadores de la liga (Decap CMS no permite filtrar solo a los del equipo ganador de este partido) — revisa que elijas al correcto."
+              - name: "mvp_nombre"
+                label: "Detalle del MVP (opcional, ej. \"17 puntos, 5 rebotes\")"
+                widget: "string"
+                required: false
+                hint: "Ya no se usa para el nombre (usa el campo de arriba). Aquí solo van detalles extra si quieres."
+              - name: "estadisticas_local"
+                label: "Estadísticas — Equipo LOCAL"
+                widget: "list"
+                required: false
+                summary: "{{fields.jugador}}: {{fields.puntos}} pts"
+                fields:
+                  - name: "jugador"
+                    label: "Jugador"
+                    widget: "relation"
+                    collection: "jugadores"
+                    file: "jugadores"
+                    search_fields: ["jugadores.*.nombre"]
+                    display_fields: ["jugadores.*.nombre"]
+                    value_field: "jugadores.*.id"
+                    options_length: 100
+                  - name: "asistio"
+                    label: "¿Asistió al juego?"
+                    widget: "select"
+                    options:
+                      - { label: "Sí asistió", value: "true" }
+                      - { label: "No asistió", value: "false" }
+                    default: "true"
+                  - { name: "puntos", label: "Puntos anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "triples", label: "Triples anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "faltas", label: "Faltas cometidas", widget: "number", value_type: "int", default: 0 }
+              - name: "estadisticas_visita"
+                label: "Estadísticas — Equipo VISITANTE"
+                widget: "list"
+                required: false
+                summary: "{{fields.jugador}}: {{fields.puntos}} pts"
+                fields:
+                  - name: "jugador"
+                    label: "Jugador"
+                    widget: "relation"
+                    collection: "jugadores"
+                    file: "jugadores"
+                    search_fields: ["jugadores.*.nombre"]
+                    display_fields: ["jugadores.*.nombre"]
+                    value_field: "jugadores.*.id"
+                    options_length: 100
+                  - name: "asistio"
+                    label: "¿Asistió al juego?"
+                    widget: "select"
+                    options:
+                      - { label: "Sí asistió", value: "true" }
+                      - { label: "No asistió", value: "false" }
+                    default: "true"
+                  - { name: "puntos", label: "Puntos anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "triples", label: "Triples anotados", widget: "number", value_type: "int", default: 0 }
+                  - { name: "faltas", label: "Faltas cometidas", widget: "number", value_type: "int", default: 0 }
+              - { name: "observaciones", label: "Observaciones (puntos del MVP, incidencias, forfeit, etc.)", widget: "text", required: false }
+  - name: "playoffs_1f"
+    label: "🏆 Primera Fuerza · Playoffs"
+    files:
+      - name: "playoffs_1f"
+        label: "Playoffs Primera Fuerza"
+        file: "data/playoffs_1f.json"
+        fields:
+          - name: "series"
+            label: "Series (a ganar 2 de 3 juegos)"
+            widget: "list"
+            summary: "{{fields.ronda}} — {{fields.equipoA}} vs {{fields.equipoB}}"
+            fields:
+              - { name: "id", label: "ID único (ej. sf-1)", widget: "string" }
+              - name: "temporada"
+                label: "Temporada"
+                widget: "relation"
+                collection: "temporadas"
+                file: "temporadas"
+                search_fields: ["temporadas.*.nombre"]
+                display_fields: ["temporadas.*.nombre"]
+                value_field: "temporadas.*.id"
+              - name: "ronda"
+                label: "Ronda"
+                widget: "select"
+                options:
+                  - { label: "Cuartos de Final", value: "Cuartos de Final" }
+                  - { label: "Semifinal", value: "Semifinal" }
+                  - { label: "Final", value: "Final" }
+              - name: "equipoA"
+                label: "Equipo A"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+              - name: "equipoB"
+                label: "Equipo B"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+              - name: "mvp_serie"
+                label: "Jugador(a) Más Valioso(a) DE LA SERIE (solo llenar si ronda = Final)"
+                widget: "string"
+                required: false
+              - name: "juegos"
+                label: "Juegos de la serie (agrega uno por uno conforme se jueguen, máximo 3)"
+                widget: "list"
+                summary: "Juego {{fields.numero}}"
+                fields:
+                  - { name: "numero", label: "Número de juego (1, 2 o 3)", widget: "number", value_type: "int" }
+                  - { name: "fecha", label: "Fecha", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD", required: false }
+                  - name: "jugado"
+                    label: "¿Ya se jugó?"
+                    widget: "select"
+                    options:
+                      - { label: "Sí, ya se jugó", value: "true" }
+                      - { label: "Todavía no", value: "false" }
+                    default: "false"
+                  - { name: "marcador_a", label: "Marcador Equipo A", widget: "number", required: false, value_type: "int" }
+                  - { name: "marcador_b", label: "Marcador Equipo B", widget: "number", required: false, value_type: "int" }
+
+  - name: "playoffs_2f"
+    label: "🏆 Segunda Fuerza · Playoffs"
+    files:
+      - name: "playoffs_2f"
+        label: "Playoffs Segunda Fuerza"
+        file: "data/playoffs_2f.json"
+        fields:
+          - name: "series"
+            label: "Series (a ganar 2 de 3 juegos)"
+            widget: "list"
+            summary: "{{fields.ronda}} — {{fields.equipoA}} vs {{fields.equipoB}}"
+            fields:
+              - { name: "id", label: "ID único (ej. sf-1)", widget: "string" }
+              - name: "temporada"
+                label: "Temporada"
+                widget: "relation"
+                collection: "temporadas"
+                file: "temporadas"
+                search_fields: ["temporadas.*.nombre"]
+                display_fields: ["temporadas.*.nombre"]
+                value_field: "temporadas.*.id"
+              - name: "ronda"
+                label: "Ronda"
+                widget: "select"
+                options:
+                  - { label: "Cuartos de Final", value: "Cuartos de Final" }
+                  - { label: "Semifinal", value: "Semifinal" }
+                  - { label: "Final", value: "Final" }
+              - name: "equipoA"
+                label: "Equipo A"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+              - name: "equipoB"
+                label: "Equipo B"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+              - name: "mvp_serie"
+                label: "Jugador(a) Más Valioso(a) DE LA SERIE (solo llenar si ronda = Final)"
+                widget: "string"
+                required: false
+              - name: "juegos"
+                label: "Juegos de la serie (agrega uno por uno conforme se jueguen, máximo 3)"
+                widget: "list"
+                summary: "Juego {{fields.numero}}"
+                fields:
+                  - { name: "numero", label: "Número de juego (1, 2 o 3)", widget: "number", value_type: "int" }
+                  - { name: "fecha", label: "Fecha", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD", required: false }
+                  - name: "jugado"
+                    label: "¿Ya se jugó?"
+                    widget: "select"
+                    options:
+                      - { label: "Sí, ya se jugó", value: "true" }
+                      - { label: "Todavía no", value: "false" }
+                    default: "false"
+                  - { name: "marcador_a", label: "Marcador Equipo A", widget: "number", required: false, value_type: "int" }
+                  - { name: "marcador_b", label: "Marcador Equipo B", widget: "number", required: false, value_type: "int" }
+
+  - name: "playoffs_3f"
+    label: "🏆 Tercera Fuerza · Playoffs"
+    files:
+      - name: "playoffs_3f"
+        label: "Playoffs Tercera Fuerza"
+        file: "data/playoffs_3f.json"
+        fields:
+          - name: "series"
+            label: "Series (a ganar 2 de 3 juegos)"
+            widget: "list"
+            summary: "{{fields.ronda}} — {{fields.equipoA}} vs {{fields.equipoB}}"
+            fields:
+              - { name: "id", label: "ID único (ej. sf-1)", widget: "string" }
+              - name: "temporada"
+                label: "Temporada"
+                widget: "relation"
+                collection: "temporadas"
+                file: "temporadas"
+                search_fields: ["temporadas.*.nombre"]
+                display_fields: ["temporadas.*.nombre"]
+                value_field: "temporadas.*.id"
+              - name: "ronda"
+                label: "Ronda"
+                widget: "select"
+                options:
+                  - { label: "Cuartos de Final", value: "Cuartos de Final" }
+                  - { label: "Semifinal", value: "Semifinal" }
+                  - { label: "Final", value: "Final" }
+              - name: "equipoA"
+                label: "Equipo A"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+              - name: "equipoB"
+                label: "Equipo B"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+              - name: "mvp_serie"
+                label: "Jugador(a) Más Valioso(a) DE LA SERIE (solo llenar si ronda = Final)"
+                widget: "string"
+                required: false
+              - name: "juegos"
+                label: "Juegos de la serie (agrega uno por uno conforme se jueguen, máximo 3)"
+                widget: "list"
+                summary: "Juego {{fields.numero}}"
+                fields:
+                  - { name: "numero", label: "Número de juego (1, 2 o 3)", widget: "number", value_type: "int" }
+                  - { name: "fecha", label: "Fecha", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD", required: false }
+                  - name: "jugado"
+                    label: "¿Ya se jugó?"
+                    widget: "select"
+                    options:
+                      - { label: "Sí, ya se jugó", value: "true" }
+                      - { label: "Todavía no", value: "false" }
+                    default: "false"
+                  - { name: "marcador_a", label: "Marcador Equipo A", widget: "number", required: false, value_type: "int" }
+                  - { name: "marcador_b", label: "Marcador Equipo B", widget: "number", required: false, value_type: "int" }
+
+  - name: "playoffs_beg"
+    label: "🏆 Beginners · Playoffs"
+    files:
+      - name: "playoffs_beg"
+        label: "Playoffs Beginners"
+        file: "data/playoffs_beg.json"
+        fields:
+          - name: "series"
+            label: "Series (a ganar 2 de 3 juegos)"
+            widget: "list"
+            summary: "{{fields.ronda}} — {{fields.equipoA}} vs {{fields.equipoB}}"
+            fields:
+              - { name: "id", label: "ID único (ej. sf-1)", widget: "string" }
+              - name: "temporada"
+                label: "Temporada"
+                widget: "relation"
+                collection: "temporadas"
+                file: "temporadas"
+                search_fields: ["temporadas.*.nombre"]
+                display_fields: ["temporadas.*.nombre"]
+                value_field: "temporadas.*.id"
+              - name: "ronda"
+                label: "Ronda"
+                widget: "select"
+                options:
+                  - { label: "Cuartos de Final", value: "Cuartos de Final" }
+                  - { label: "Semifinal", value: "Semifinal" }
+                  - { label: "Final", value: "Final" }
+              - name: "equipoA"
+                label: "Equipo A"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+              - name: "equipoB"
+                label: "Equipo B"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+              - name: "mvp_serie"
+                label: "Jugador(a) Más Valioso(a) DE LA SERIE (solo llenar si ronda = Final)"
+                widget: "string"
+                required: false
+              - name: "juegos"
+                label: "Juegos de la serie (agrega uno por uno conforme se jueguen, máximo 3)"
+                widget: "list"
+                summary: "Juego {{fields.numero}}"
+                fields:
+                  - { name: "numero", label: "Número de juego (1, 2 o 3)", widget: "number", value_type: "int" }
+                  - { name: "fecha", label: "Fecha", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD", required: false }
+                  - name: "jugado"
+                    label: "¿Ya se jugó?"
+                    widget: "select"
+                    options:
+                      - { label: "Sí, ya se jugó", value: "true" }
+                      - { label: "Todavía no", value: "false" }
+                    default: "false"
+                  - { name: "marcador_a", label: "Marcador Equipo A", widget: "number", required: false, value_type: "int" }
+                  - { name: "marcador_b", label: "Marcador Equipo B", widget: "number", required: false, value_type: "int" }
+
+  - name: "playoffs_dom"
+    label: "🏆 Dominguera · Playoffs"
+    files:
+      - name: "playoffs_dom"
+        label: "Playoffs Dominguera"
+        file: "data/playoffs_dom.json"
+        fields:
+          - name: "series"
+            label: "Series (a ganar 2 de 3 juegos)"
+            widget: "list"
+            summary: "{{fields.ronda}} — {{fields.equipoA}} vs {{fields.equipoB}}"
+            fields:
+              - { name: "id", label: "ID único (ej. sf-1)", widget: "string" }
+              - name: "temporada"
+                label: "Temporada"
+                widget: "relation"
+                collection: "temporadas"
+                file: "temporadas"
+                search_fields: ["temporadas.*.nombre"]
+                display_fields: ["temporadas.*.nombre"]
+                value_field: "temporadas.*.id"
+              - name: "ronda"
+                label: "Ronda"
+                widget: "select"
+                options:
+                  - { label: "Cuartos de Final", value: "Cuartos de Final" }
+                  - { label: "Semifinal", value: "Semifinal" }
+                  - { label: "Final", value: "Final" }
+              - name: "equipoA"
+                label: "Equipo A"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+              - name: "equipoB"
+                label: "Equipo B"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+              - name: "mvp_serie"
+                label: "Jugador(a) Más Valioso(a) DE LA SERIE (solo llenar si ronda = Final)"
+                widget: "string"
+                required: false
+              - name: "juegos"
+                label: "Juegos de la serie (agrega uno por uno conforme se jueguen, máximo 3)"
+                widget: "list"
+                summary: "Juego {{fields.numero}}"
+                fields:
+                  - { name: "numero", label: "Número de juego (1, 2 o 3)", widget: "number", value_type: "int" }
+                  - { name: "fecha", label: "Fecha", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD", required: false }
+                  - name: "jugado"
+                    label: "¿Ya se jugó?"
+                    widget: "select"
+                    options:
+                      - { label: "Sí, ya se jugó", value: "true" }
+                      - { label: "Todavía no", value: "false" }
+                    default: "false"
+                  - { name: "marcador_a", label: "Marcador Equipo A", widget: "number", required: false, value_type: "int" }
+                  - { name: "marcador_b", label: "Marcador Equipo B", widget: "number", required: false, value_type: "int" }
+
+  - name: "playoffs_bot"
+    label: "🏆 Botanera · Playoffs"
+    files:
+      - name: "playoffs_bot"
+        label: "Playoffs Botanera"
+        file: "data/playoffs_bot.json"
+        fields:
+          - name: "series"
+            label: "Series (a ganar 2 de 3 juegos)"
+            widget: "list"
+            summary: "{{fields.ronda}} — {{fields.equipoA}} vs {{fields.equipoB}}"
+            fields:
+              - { name: "id", label: "ID único (ej. sf-1)", widget: "string" }
+              - name: "temporada"
+                label: "Temporada"
+                widget: "relation"
+                collection: "temporadas"
+                file: "temporadas"
+                search_fields: ["temporadas.*.nombre"]
+                display_fields: ["temporadas.*.nombre"]
+                value_field: "temporadas.*.id"
+              - name: "ronda"
+                label: "Ronda"
+                widget: "select"
+                options:
+                  - { label: "Cuartos de Final", value: "Cuartos de Final" }
+                  - { label: "Semifinal", value: "Semifinal" }
+                  - { label: "Final", value: "Final" }
+              - name: "equipoA"
+                label: "Equipo A"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+              - name: "equipoB"
+                label: "Equipo B"
+                widget: "relation"
+                collection: "equipos"
+                file: "equipos"
+                search_fields: ["equipos.*.nombre"]
+                display_fields: ["equipos.*.nombre"]
+                value_field: "equipos.*.id"
+              - name: "mvp_serie"
+                label: "Jugador(a) Más Valioso(a) DE LA SERIE (solo llenar si ronda = Final)"
+                widget: "string"
+                required: false
+              - name: "juegos"
+                label: "Juegos de la serie (agrega uno por uno conforme se jueguen, máximo 3)"
+                widget: "list"
+                summary: "Juego {{fields.numero}}"
+                fields:
+                  - { name: "numero", label: "Número de juego (1, 2 o 3)", widget: "number", value_type: "int" }
+                  - { name: "fecha", label: "Fecha", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD", required: false }
+                  - name: "jugado"
+                    label: "¿Ya se jugó?"
+                    widget: "select"
+                    options:
+                      - { label: "Sí, ya se jugó", value: "true" }
+                      - { label: "Todavía no", value: "false" }
+                    default: "false"
+                  - { name: "marcador_a", label: "Marcador Equipo A", widget: "number", required: false, value_type: "int" }
+                  - { name: "marcador_b", label: "Marcador Equipo B", widget: "number", required: false, value_type: "int" }
+
+  # ===== SEDES, NOTICIAS Y PATROCINADORES =====
+  - name: "sedes"
+    label: "📍 Sedes"
+    files:
+      - name: "sedes"
+        label: "Sedes"
+        file: "data/sedes.json"
+        fields:
+          - name: "sedes"
+            label: "Sedes"
+            widget: "list"
+            summary: "{{fields.nombre}}"
+            fields:
+              - { name: "id", label: "ID único (ej. gim_municipal)", widget: "string" }
+              - { name: "nombre", label: "Nombre de la sede", widget: "string" }
+
+  - name: "noticias"
+    label: "📰 Noticias / Avisos"
+    files:
+      - name: "noticias"
+        label: "Noticias"
+        file: "data/noticias.json"
+        fields:
+          - name: "avisos"
+            label: "Avisos"
+            widget: "list"
+            summary: "{{fields.fecha}} — {{fields.titulo}}"
+            fields:
+              - { name: "titulo", label: "Título", widget: "string" }
+              - { name: "fecha", label: "Fecha", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+              - { name: "cuerpo", label: "Contenido del aviso", widget: "text" }
+              - { name: "imagen", label: "Imagen (opcional)", widget: "image", required: false }
+
+  - name: "patrocinadores"
+    label: "🤝 Patrocinadores"
+    files:
+      - name: "patrocinadores"
+        label: "Patrocinadores"
+        file: "data/patrocinadores.json"
+        fields:
+          - name: "patrocinadores"
+            label: "Patrocinadores"
+            widget: "list"
+            summary: "{{fields.nombre}}"
+            fields:
+              - { name: "nombre", label: "Nombre del patrocinador", widget: "string" }
+              - { name: "logo", label: "Logo", widget: "image" }
+              - { name: "url", label: "Sitio web o Facebook (opcional)", widget: "string", required: false }

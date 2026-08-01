@@ -1,0 +1,5 @@
+{ "sedes": [
+  { "id": "gim_municipal", "nombre": "Gimnasio Municipal" },
+  { "id": "cancha_cum", "nombre": "Cancha del CUM" },
+  { "id": "gim_1ro_mayo", "nombre": "Gimnasio 1ro de Mayo" }
+] }

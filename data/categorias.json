@@ -1,0 +1,8 @@
+[
+  { "id": "1f", "nombre": "Primera Fuerza", "dia_regular": "Variable", "etiqueta_mvp": "Jugador(a) Más Valioso(a)", "orden": 1 },
+  { "id": "2f", "nombre": "Segunda Fuerza", "dia_regular": "Variable", "etiqueta_mvp": "Jugador(a) Más Valioso(a)", "orden": 2 },
+  { "id": "3f", "nombre": "Tercera Fuerza", "dia_regular": "Variable", "etiqueta_mvp": "Jugador(a) Más Valioso(a)", "orden": 3 },
+  { "id": "beg", "nombre": "Beginners", "dia_regular": "Variable", "etiqueta_mvp": "Jugador(a) Más Valioso(a)", "orden": 4 },
+  { "id": "dom", "nombre": "Dominguera", "dia_regular": "Domingo", "etiqueta_mvp": "Jugador(a) Más Valioso(a)", "orden": 5 },
+  { "id": "bot", "nombre": "Botanera", "dia_regular": "Variable", "etiqueta_mvp": "Jugador(a) Más Valioso(a)", "orden": 6 }
+]
