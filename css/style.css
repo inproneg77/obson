@@ -1,11 +1,14 @@
-/* ===== ADEMEBA — sistema visual v3 =====
+/* ===== ADEMEBA — sistema visual v4 =====
    Paleta oficial: rojo + verde + naranja (del escudo) + blanco.
    Nota: los nombres de variable (--navy, --baby, --gold) se quedaron del
-   esquema anterior para no tener que tocar cientos de líneas del CSS —
+   esquema original para no tener que tocar cientos de líneas del CSS —
    pero ahora --navy guarda un rojo oscuro, --baby un verde y --gold un
    naranja. Solo cambiaron los valores, no los nombres.
-   Display: Teko (condensada, marcador de gimnasio)
-   Body: Inter | Datos/horas: JetBrains Mono
+   Display: Anton (bloques tipo cartel/lona de cancha)
+   Body: Work Sans | Datos/horas: Space Mono (a máquina de escribir,
+   como una hoja de estadísticas llenada a mano)
+   Firma visual: tarjetas de juego con "esquina doblada", como un boleto
+   o talón de marcador de liga barrial.
 */
 :root{
   --navy: #460f11;
@@ -21,8 +24,8 @@
   --text-dim: #8a716a;
   --line: #f0e0d8;
   --win: #2f7d32;
-  --radius: 14px;
-  --radius-sm: 8px;
+  --radius: 3px;
+  --radius-sm: 2px;
   --shadow: 0 6px 18px -8px rgba(122,20,24,0.18);
   --shadow-lg: 0 20px 40px -14px rgba(122,20,24,0.28);
 }
@@ -35,21 +38,24 @@ body{
   overflow-x: hidden;
   background: var(--bg);
   color: var(--ink);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Work Sans', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 h1,h2,h3, .display{
-  font-family: 'Teko', sans-serif;
-  font-weight: 600;
-  letter-spacing: .02em;
+  font-family: 'Anton', sans-serif;
+  font-weight: 400;
+  letter-spacing: .01em;
   text-transform: uppercase;
   margin: 0;
 }
-.mono{ font-family: 'JetBrains Mono', monospace; }
+.mono{ font-family: 'Space Mono', monospace; }
 a{ color: inherit; text-decoration: none; }
 
-/* ===== Header ===== */
+/* ===== Header =====
+   Dos franjas: arriba el escudo centrado, abajo una franja de pestañas
+   tipo "panel de marcador" — un acomodo distinto al típico
+   logo-izquierda/nav-derecha en una sola fila. */
 .site-header{
   position: sticky; top:0; z-index: 20;
   background: var(--navy);
@@ -57,8 +63,8 @@ a{ color: inherit; text-decoration: none; }
 }
 .site-header__inner{
   max-width: 1120px; margin: 0 auto;
-  display:flex; flex-wrap: wrap; align-items:center; justify-content:space-between; gap: 8px 12px;
-  padding: 12px 20px;
+  display:flex; align-items:center; justify-content:center;
+  padding: 14px 20px 10px;
 }
 .brand{ display:flex; align-items:center; gap:12px; flex-shrink: 0; }
 .brand__mark{
@@ -66,22 +72,28 @@ a{ color: inherit; text-decoration: none; }
   object-fit: contain;
   display:block;
 }
-.brand__name{ font-size: 28px; line-height: 1; letter-spacing:.03em; color: var(--white); }
-.brand__sub{ font-size: 10.5px; color: var(--gold-bright); letter-spacing:.16em; text-transform:uppercase; }
+.brand__name{ font-size: 26px; line-height: 1; letter-spacing:.02em; color: var(--white); }
+.brand__sub{ font-size: 10px; color: var(--gold-bright); letter-spacing:.16em; text-transform:uppercase; font-family:'Space Mono',monospace; }
 
 .site-nav{
-  display:flex; flex-wrap: wrap; gap: 4px 6px;
-  min-width: 0;
+  display:flex; justify-content:center;
+  background: var(--navy-2);
+  border-top: 1px solid rgba(255,255,255,.08);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.site-nav::-webkit-scrollbar{ display:none; }
 .site-nav a{
   flex-shrink: 0;
-  font-size: 12.5px; letter-spacing:.09em; text-transform:uppercase; font-weight:600;
-  padding: 9px 16px; border-radius: 999px; color: var(--baby);
-  border: 1px solid transparent;
-  transition: color .15s ease, border-color .15s ease;
+  font-size: 12px; letter-spacing:.06em; text-transform:uppercase; font-weight:600;
+  padding: 12px 18px; color: var(--baby);
+  border-right: 1px solid rgba(255,255,255,.08);
+  border-bottom: 3px solid transparent;
+  transition: color .15s ease, border-color .15s ease, background .15s ease;
 }
 .site-nav a.active, .site-nav a:hover{
-  color: var(--navy); border-color: var(--gold); background: var(--gold-bright);
+  color: var(--white); border-bottom-color: var(--gold-bright); background: rgba(245,148,30,.12);
 }
 
 /* ===== Hero (franja marino con textura de balón) ===== */
@@ -96,11 +108,11 @@ a{ color: inherit; text-decoration: none; }
   content:"";
   position:absolute; right:-60px; top:-60px; width:340px; height:340px;
   border-radius:50%;
-  border: 2px solid rgba(142,202,230,0.18);
+  border: 2px solid rgba(143,209,158,0.18);
   background:
-    radial-gradient(circle at center, transparent 0 168px, rgba(212,175,55,0.10) 169px, transparent 170px),
-    linear-gradient(rgba(142,202,230,0.14), rgba(142,202,230,0.14)) center / 2px 100%no-repeat,
-    linear-gradient(90deg, rgba(142,202,230,0.14), rgba(142,202,230,0.14)) center / 100% 2px no-repeat;
+    radial-gradient(circle at center, transparent 0 168px, rgba(232,100,28,0.10) 169px, transparent 170px),
+    linear-gradient(rgba(143,209,158,0.14), rgba(143,209,158,0.14)) center / 2px 100%no-repeat,
+    linear-gradient(90deg, rgba(143,209,158,0.14), rgba(143,209,158,0.14)) center / 100% 2px no-repeat;
 }
 .hero__inner{ max-width: 1120px; margin: 0 auto; position:relative; }
 .hero__eyebrow{
@@ -116,10 +128,12 @@ a{ color: inherit; text-decoration: none; }
 }
 .hero__sub{
   color: var(--baby); font-size: 14.5px; margin-top: 10px; max-width: 540px;
-  font-family:'Inter',sans-serif; text-transform:none; letter-spacing:0; font-weight:400;
+  font-family:'Work Sans',sans-serif; text-transform:none; letter-spacing:0; font-weight:400;
 }
 
-/* ===== Category tabs ===== */
+/* ===== Category tabs =====
+   Bloques tipo interruptor de marcador (no pastillas): borde grueso
+   abajo que se "enciende" en naranja al estar activo. */
 .controles{
   max-width: 1120px; margin: -26px auto 0; padding: 0 20px;
   position: relative; z-index: 5;
@@ -127,38 +141,43 @@ a{ color: inherit; text-decoration: none; }
   flex-wrap: wrap;
 }
 .temporada-select{
-  font-family: 'Inter', sans-serif;
+  font-family: 'Work Sans', sans-serif;
   font-size: 13px; font-weight: 600;
   color: var(--navy);
   background: var(--white);
   border: 2px solid var(--navy);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   padding: 9px 16px;
   cursor: pointer;
   box-shadow: var(--shadow);
 }
 .tabs{
-  display:flex; gap:10px; flex-wrap: wrap;
+  display:flex; gap:0; flex-wrap: wrap;
+  border: 2px solid var(--navy);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: var(--shadow);
 }
 .tab{
   position:relative;
-  font-family:'Teko',sans-serif; font-size: 19px; letter-spacing:.03em;
-  padding: 10px 22px 12px;
+  font-family:'Anton',sans-serif; font-size: 17px; letter-spacing:.02em;
+  padding: 10px 20px 9px;
   background: var(--white);
-  border: 2px solid var(--navy);
-  border-radius: 999px;
+  border: none;
+  border-right: 1px solid var(--line);
   color: var(--navy);
   cursor: pointer;
-  box-shadow: var(--shadow);
-  transition: color .15s ease, background .2s ease, transform .12s ease;
+  border-bottom: 4px solid transparent;
+  transition: color .15s ease, background .2s ease, border-color .2s ease;
 }
-.tab:hover{ transform: translateY(-1px); }
+.tab:last-child{ border-right: none; }
+.tab:hover{ background: var(--baby-soft); }
 .tab.is-active{
-  color: var(--navy);
-  background: linear-gradient(135deg, var(--gold-bright), var(--gold));
-  border-color: var(--gold);
+  color: var(--white);
+  background: var(--navy);
+  border-bottom-color: var(--gold-bright);
 }
-.tab .tab-meta{ font-family:'Inter',sans-serif; font-size:10px; text-transform:uppercase; letter-spacing:.1em; opacity:.7; display:block; margin-top:-2px;}
+.tab .tab-meta{ font-family:'Work Sans',sans-serif; font-size:10px; text-transform:uppercase; letter-spacing:.1em; opacity:.7; display:block; margin-top:-2px;}
 
 /* ===== Page shell ===== */
 .page{ max-width: 1120px; margin: 0 auto; padding: 34px 20px 40px; }
@@ -185,7 +204,7 @@ a{ color: inherit; text-decoration: none; }
 .mes__titulo::-webkit-details-marker{ display:none; }
 .mes__titulo::after{
   content: "▾";
-  font-family: 'Inter', sans-serif;
+  font-family: 'Work Sans', sans-serif;
   font-size: 14px;
   color: var(--gold);
   transition: transform .2s ease;
@@ -222,6 +241,16 @@ a{ color: inherit; text-decoration: none; }
   background: var(--line);
 }
 .juego.is-jugado::before{ background: linear-gradient(180deg, var(--gold), var(--navy-3)); }
+.juego::after, .campeon-card::after, .proximo-juego::after, .historial-item::after{
+  /* Firma visual: esquina doblada, como un talón de marcador de liga barrial */
+  content:"";
+  position:absolute; top:0; right:0;
+  width:18px; height:18px;
+  background: linear-gradient(135deg, transparent 50%, var(--bg) 50%);
+  box-shadow: -2px 2px 3px -1px rgba(43,21,18,.18);
+  pointer-events: none;
+}
+.historial-item::after{ width:13px; height:13px; }
 
 .fase-tag{
   position: absolute; top: 10px; right: 14px;
@@ -239,8 +268,8 @@ a{ color: inherit; text-decoration: none; }
   border-top: 1px dashed var(--line);
   font-size: 12px; color: var(--text-dim);
 }
-.serie__juego{ font-family:'JetBrains Mono', monospace; }
-.serie__juego--pendiente{ opacity: .6; font-style: italic; font-family:'Inter',sans-serif; }
+.serie__juego{ font-family:'Space Mono', monospace; }
+.serie__juego--pendiente{ opacity: .6; font-style: italic; font-family:'Work Sans',sans-serif; }
 
 /* ===== Campeones ===== */
 .campeones-grid{
@@ -263,7 +292,7 @@ a{ color: inherit; text-decoration: none; }
 }
 .campeon-card__trofeo{ font-size: 30px; margin-bottom: 6px; }
 .campeon-card__logo{ width: 64px; height: 64px; border-radius: 50%; border: 1px solid var(--line); margin: 0 auto 10px; display:block; }
-.campeon-card__nombre{ font-family:'Teko',sans-serif; font-size: 24px; color: var(--navy); line-height:1.1; }
+.campeon-card__nombre{ font-family:'Anton',sans-serif; font-size: 24px; color: var(--navy); line-height:1.1; }
 .campeon-card__cat{ font-size: 12px; color: var(--text-dim); margin-top: 4px; }
 .campeon-card__temp{ font-size: 12px; color: var(--win); font-weight:700; margin-top: 6px; }
 .campeon-card__fecha{ font-size: 11px; color: var(--text-dim); margin-top: 2px; }
@@ -275,10 +304,10 @@ a{ color: inherit; text-decoration: none; }
 .equipo__nombre{ font-size:14px; font-weight:700; color: var(--navy); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
 .marcador{ text-align:center; min-width: 92px; }
-.marcador__score{ font-family:'Teko',sans-serif; font-size: 32px; line-height:1; display:flex; align-items:center; justify-content:center; gap:10px; }
+.marcador__score{ font-family:'Anton',sans-serif; font-size: 32px; line-height:1; display:flex; align-items:center; justify-content:center; gap:10px; }
 .marcador__score .gano{ color: var(--win); }
 .marcador__score .perdio{ color: var(--text-dim); }
-.marcador__vs{ font-family:'Teko',sans-serif; font-size: 20px; color: var(--navy-3); }
+.marcador__vs{ font-family:'Anton',sans-serif; font-size: 20px; color: var(--navy-3); }
 .marcador__info{ font-size: 10px; color: var(--text-dim); text-transform:uppercase; letter-spacing:.08em; margin-top: 3px; }
 .marcador__badge{
   font-size: 9px; letter-spacing:.1em; text-transform:uppercase; font-weight:700;
@@ -314,14 +343,14 @@ a{ color: inherit; text-decoration: none; }
 .table-scroll{ width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius); }
 .standing-table{ width:100%; min-width: 560px; border-collapse: collapse; background: var(--white); overflow:hidden; border:1px solid var(--line); box-shadow: var(--shadow); }
 .standing-table th, .standing-table td{ padding: 12px 12px; text-align:center; font-size: 13px; border-bottom: 1px solid var(--line); }
-.standing-table th{ font-family:'Teko',sans-serif; font-size:16px; letter-spacing:.05em; text-transform:uppercase; color: var(--white); text-align:center; background: var(--navy); }
+.standing-table th{ font-family:'Anton',sans-serif; font-size:16px; letter-spacing:.05em; text-transform:uppercase; color: var(--white); text-align:center; background: var(--navy); }
 .standing-table td:nth-child(2){ text-align:left; }
 .standing-table tr:last-child td{ border-bottom:none; }
 .standing-table tr:nth-child(even) td{ background: var(--baby-soft); }
 .standing-table tr:hover td{ background: #fdead9; }
 .standing-table .equipo-cell{ display:flex; align-items:center; gap:9px; font-weight:600; color: var(--navy); }
 .standing-table .equipo-cell img{ width:26px; height:26px; border-radius:50%; border:1px solid var(--line); }
-.standing-table .rank{ font-family:'Teko',sans-serif; font-size:19px; color: var(--navy); }
+.standing-table .rank{ font-family:'Anton',sans-serif; font-size:19px; color: var(--navy); }
 .standing-table tr:nth-child(1) .rank{ color: #b8860b; }
 .standing-table tr:nth-child(2) .rank{ color: #8a97a6; }
 .standing-table tr:nth-child(3) .rank{ color: #a9702f; }
@@ -381,7 +410,7 @@ a{ color: inherit; text-decoration: none; }
 .cmp-resumen__equipo{ display:flex; flex-direction:column; align-items:center; gap: 8px; }
 .cmp-resumen__equipo img{ width: 60px; height: 60px; border-radius: 50%; border: 1px solid var(--line); }
 .cmp-resumen__equipo span{ font-weight:700; color: var(--navy); font-size: 13px; text-align:center; max-width:120px; }
-.cmp-resumen__victorias{ font-family:'Teko',sans-serif; font-size: 36px; color: var(--win); }
+.cmp-resumen__victorias{ font-family:'Anton',sans-serif; font-size: 36px; color: var(--win); }
 .cmp-resumen__centro{ text-align:center; }
 
 .cmp-encabezado{ display:flex; justify-content:space-between; gap: 16px; margin: 4px 0 10px; }
@@ -396,6 +425,7 @@ a{ color: inherit; text-decoration: none; }
   background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
   box-shadow: var(--shadow);
   display:flex; align-items:center; justify-content:space-between; gap: 18px; flex-wrap: wrap;
+  position: relative; overflow: hidden;
 }
 .proximo-juego.is-importante{
   background: linear-gradient(120deg, var(--navy), var(--navy-2));
@@ -410,7 +440,7 @@ a{ color: inherit; text-decoration: none; }
 .proximo-juego__equipo{ display:flex; align-items:center; gap: 8px; font-weight:700; font-size: 14px; color: var(--navy); }
 .is-importante .proximo-juego__equipo{ color: var(--white); }
 .proximo-juego__equipo img{ width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); }
-.proximo-juego__vs{ font-family:'Teko',sans-serif; font-size: 20px; color: var(--text-dim); }
+.proximo-juego__vs{ font-family:'Anton',sans-serif; font-size: 20px; color: var(--text-dim); }
 .is-importante .proximo-juego__vs{ color: var(--baby); }
 .proximo-juego__info{ font-size: 12px; color: var(--text-dim); }
 .is-importante .proximo-juego__info{ color: var(--baby); }
@@ -435,7 +465,7 @@ a{ color: inherit; text-decoration: none; }
   background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
   padding: 20px 12px; cursor: pointer; box-shadow: var(--shadow);
   transition: transform .15s ease, box-shadow .15s ease;
-  font-family: 'Inter', sans-serif; font-size: 13px; font-weight:700; color: var(--navy);
+  font-family: 'Work Sans', sans-serif; font-size: 13px; font-weight:700; color: var(--navy);
   text-align:center;
 }
 .equipo-card:hover{ transform: translateY(-3px); box-shadow: var(--shadow-lg); }
@@ -478,7 +508,7 @@ a{ color: inherit; text-decoration: none; }
   .equipo-detalle-header::before{
     content: "REPORTE DE ESTADÍSTICAS — LIGA MUNICIPAL ADEMEBA";
     display: block;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Work Sans', sans-serif;
     font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
     color: var(--text-dim); margin-bottom: 10px;
   }
@@ -525,6 +555,7 @@ a{ color: inherit; text-decoration: none; }
   display:grid; grid-template-columns: auto 1fr auto auto auto; align-items:center; gap: 12px;
   background: var(--white); border: 1px solid var(--line); border-radius: var(--radius-sm);
   padding: 10px 16px; margin-bottom: 8px; font-size: 13px;
+  position: relative; overflow: hidden;
 }
 .historial-item__resultado{
   width: 22px; height: 22px; border-radius: 50%; display:flex; align-items:center; justify-content:center;
@@ -589,22 +620,13 @@ a{ color: inherit; text-decoration: none; }
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    padding-bottom: 2px;
   }
   .tabs::-webkit-scrollbar{ display: none; }
   .tab{ flex-shrink: 0; }
-  .site-nav a{ padding: 9px 12px; font-size: 11.5px; }
-  .site-nav{
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    justify-content: flex-start;
-  }
-  .site-nav::-webkit-scrollbar{ display: none; }
-  .site-nav a{ flex-shrink: 0; }
-  .brand__name{ font-size: 22px; }
-  .brand__sub{ font-size: 9px; }
+  .site-nav a{ padding: 10px 13px; font-size: 11px; }
+  .site-nav{ justify-content: flex-start; }
+  .brand__name{ font-size: 21px; }
+  .brand__sub{ font-size: 8.5px; }
   .campeones-grid{ grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 }
 
